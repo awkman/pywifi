@@ -6,7 +6,7 @@ PyWiFi is a module providing APIs to manipulating wifi interface on the platform
   - Easy to use
  
 ### Version
-0.9.3
+0.9.4
 
 ### Tech
 
