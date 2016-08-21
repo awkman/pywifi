@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
 # vim: set fileencoding=utf-8
 
 import platform
 
 if platform.system().lower() == 'windows':
-    import win.wifiutils as wifiutils
+    from .win import wifiutils
 elif platform.system().lower() == 'linux':
-    import linux.wifiutils as wifiutils
+    from .linux import wifiutils
 
 
 class Interface:
