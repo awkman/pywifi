@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 # vim: set fileencoding=utf-8
 
 from ctypes import *
-from . import native_wifi as wifiapi
 import re
 
+from . import native_wifi as wifiapi
 
 def scan(obj):
     """Trigger the wifi interface to scan."""
@@ -110,7 +111,7 @@ def add_network_profile(obj, params):
 </WLANProfile>"""
 
     xml = xml.format(**params)
-    print(xml)
+    #print(xml)
     status = wifiapi.wlan_set_profile(wifiapi.handle, obj['guid'], xml,
                                       True, byref(reason_code))
     if status != wifiapi.ERROR_SUCCESS:
@@ -159,7 +160,7 @@ def network_profiles(obj):
         profile['ssid'] = re.search(r'<name>(.*)</name>', xml.value).group(1)
         profile['key_mgmt'] = re.search(
             r'<authentication>(.*)</authentication>', xml.value).group(1).lower()
-        print(xml.value)
+        #print(xml.value)
 
         profile_list.append(profile)
 
