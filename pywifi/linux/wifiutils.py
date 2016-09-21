@@ -38,7 +38,7 @@ def scan_results(obj):
 
         tmp_wpa = bss.Get(wpas_dbus.WPAS_DBUS_NEW_IFACE_BSS,
                           'WPA', dbus_interface=dbus.PROPERTIES_IFACE)
-        security = False
+        security = []
         if len(tmp_wpa['KeyMgmt']):
             security = tmp_wpa['KeyMgmt']
 
