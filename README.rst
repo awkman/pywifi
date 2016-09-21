@@ -38,7 +38,7 @@ Example
     iface = wifi.interfaces()[0]
 
     profile = {'ssid': 'testap',
-               'key_mgmt': 'wpa2psak',
+               'key_mgmt': 'wpa2psk',
                'psk': 'testap'}
 
     iface.remove_all_network_profiles()
