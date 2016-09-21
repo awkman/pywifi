@@ -111,8 +111,12 @@ def remove_all_network_profiles(obj):
 def status(obj):
     """Get the wifi interface status."""
 
-    return wpas_dbus.status(obj['iface'])
+    status = wpas_dbus.status(obj['iface'])
 
+    if status == 'completed':
+        status = 'connected'
+
+    return status
 
 def interfaces():
     """Get the wifi interface lists."""
