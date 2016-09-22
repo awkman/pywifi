@@ -8,6 +8,8 @@ if platform.system().lower() == 'windows':
     from .win import wifiutils
 elif platform.system().lower() == 'linux':
     from .linux import wifiutils
+else:
+    from .osx import wifiutils
 
 
 class PyWiFi:
