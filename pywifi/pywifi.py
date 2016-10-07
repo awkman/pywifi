@@ -20,7 +20,7 @@ class PyWiFi:
     def interfaces(self):
         """Collect the available wlan interfaces."""
 
-        __ifaces = []
+        self.__ifaces = []
 
         for interface in wifiutils.interfaces():
             iface = Interface(interface)
