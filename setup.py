@@ -7,8 +7,8 @@ except ImportError:
 
 setup(
   name = 'pywifi',
-  version = '0.9.9',
-  author = 'Jiang Shengh-Jhih',
+  version = '1.0.0',
+  author = 'Jiang Sheng-Jhih',
   author_email = 'shengjhih@gmail.com',
   description = "A cross-platform module for manipulating WiFi devices.",
   packages=find_packages(),
