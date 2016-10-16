@@ -35,23 +35,32 @@ Example
     import pywifi
 
     wifi = pywifi.PyWiFi()
+
     iface = wifi.interfaces()[0]
 
+    iface.disconnect()
+    time.sleep(1)
+    assert iface.status() in\
+        [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
+
     profile = {'ssid': 'testap',
-               'key_mgmt': 'wpa2psk',
-               'psk': 'testap'}
+               'key_mgmt': pywifi.const.AUTH_ALG_WPA2PSK,
+               'psk': '12345678'}
 
     iface.remove_all_network_profiles()
-    iface.add_network_profile(profile)
-    networks = iface.network_profiles()
+    tmp_profile = iface.add_network_profile(profile)
 
-    iface.connect(networks[0])
-    time.sleep(5)
-    assert iface.status() == 'connected'
+    iface.connect(tmp_profile)
+    time.sleep(30)
+    assert iface.status() == const.IFACE_CONNECTED
 
     iface.disconnect()
+    time.sleep(1)
+    assert iface.status() in\
+        [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
+
     
-\(C) Jiang Shengh-Jhih 2016, `MIT License`_.
+\(C) Jiang Sheng-Jhih 2016, `MIT License`_.
 
 .. _GLib: https://developer.gnome.org/glib/
 .. _Native Wifi: https://msdn.microsoft.com/en-us/library/windows/desktop/ms706556.aspx

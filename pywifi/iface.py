@@ -1,74 +1,110 @@
 #!/usr/bin/env python3
 # vim: set fileencoding=utf-8
 
+"""Implement Interface for manipulating wifi devies."""
+
 import platform
+import logging
+
 
 if platform.system().lower() == 'windows':
-    from .win import wifiutils
+    from .win import wifiutil
 elif platform.system().lower() == 'linux':
-    from .linux import wifiutils
+    from .linux import wifiutil_wpa_dbus as wifiutil
+else:
+    from .osx import wifiutil
 
 
 class Interface:
-    """Interface provides basic methods for manipulating wifi interfaces."""
+    """Interface provides methods for manipulating wifi devices."""
 
     """
-    For encapsulating os dependent behavior, we declare __raw_obj here for
+    For encapsulating OS dependent behavior, we declare _raw_obj here for
     storing some common attribute (e.g. name) and os attributes (e.g. dbus
     objects for linux)
     """
-    __raw_obj = {}
+    _raw_obj = {}
+    _wifi_ctrl = {}
+    _logger = None
 
     def __init__(self, raw_obj):
 
-        self.__raw_obj = raw_obj
+        self._raw_obj = raw_obj
+        self._wifi_ctrl = wifiutil.WifiUtil()
+        self._logger = logging.getLogger('pywifi')
 
     def name(self):
         """"Get the name of the wifi interfacce."""
 
-        return self.__raw_obj['name']
+        return self._raw_obj['name']
 
     def scan(self):
         """Trigger the wifi interface to scan."""
 
-        wifiutils.scan(self.__raw_obj)
+        self._logger.info("iface '%s' scans", self.name())
+
+        self._wifi_ctrl.scan(self._raw_obj)
 
     def scan_results(self):
         """Return the scan result."""
+        
+        bsses = self._wifi_ctrl.scan_results(self._raw_obj)
 
-        return wifiutils.scan_results(self.__raw_obj)
+        if self._logger.isEnabledFor(logging.INFO):
+            for bss in bsses:
+                self._logger.info("Find bss:")
+                self._logger.info("\tbssid: %s", bss['bssid'])
+                self._logger.info("\tssid: %s", bss['ssid'])
+                self._logger.info("\tfreq: %d", bss['freq'])
+                self._logger.info("\tkey_mgmt: %s", bss['key_mgmt'])
+                self._logger.info("\tsignal: %d", bss['signal'])
+
+        return bsses
 
     def add_network_profile(self, params):
         """Add the info of the AP for connecting afterward."""
 
-        wifiutils.add_network_profile(self.__raw_obj, params)
+        return self._wifi_ctrl.add_network_profile(self._raw_obj, params)
 
     def remove_network_profile(self, **kwargs):
         """Remove the specified AP settings."""
 
-        wifiutils.remove_network_profile(self.__raw_obj, kwargs)
+        self._wifi_ctrl.remove_network_profile(self._raw_obj, kwargs)
 
     def remove_all_network_profiles(self):
         """Remove all the AP settings."""
 
-        wifiutils.remove_all_network_profiles(self.__raw_obj)
+        self._wifi_ctrl.remove_all_network_profiles(self._raw_obj)
 
     def network_profiles(self):
         """Get all the AP profiles."""
 
-        return wifiutils.network_profiles(self.__raw_obj)
+        profiles = self._wifi_ctrl.network_profiles(self._raw_obj)
+
+        if self._logger.isEnabledFor(logging.INFO):
+            for profile in profiles:
+                self._logger.info("Get profile:")
+                self._logger.info("\tssid: %s", profile['ssid'])
+                self._logger.info("\tkey_mgmt: %s", profile['key_mgmt'])
+
+        return profiles
 
     def connect(self, params):
         """Connect to the specified AP."""
 
-        wifiutils.connect(self.__raw_obj, params)
+        self._logger.info("iface '%s' connects to AP: '%s'",
+                          self.name(), params['ssid'])
+
+        self._wifi_ctrl.connect(self._raw_obj, params)
 
     def disconnect(self):
         """Disconnect from the specified AP."""
 
-        wifiutils.disconnect(self.__raw_obj)
+        self._logger.info("iface '%s' disconnects", self.name())
+
+        self._wifi_ctrl.disconnect(self._raw_obj)
 
     def status(self):
         """Get the status of the wifi interface."""
 
-        return wifiutils.status(self.__raw_obj)
+        return self._wifi_ctrl.status(self._raw_obj)
