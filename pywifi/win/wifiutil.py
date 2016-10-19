@@ -7,7 +7,6 @@ import re
 import platform
 import time
 import logging
-from enum import Enum
 from ctypes import *
 from ctypes.wintypes import *
 from comtypes import GUID

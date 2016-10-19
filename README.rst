@@ -1,11 +1,13 @@
-PyWiFi
+pywifi
 ======
 
-PyWiFi provides a cross-platform Python module for manipulating wireless
+pywifi provides a cross-platform Python module for manipulating wireless
 interfaces.
 
 * Easy to use
 * Supports Windows and Linux
+
+Now pywifi runs under python 3.5
 
 Prerequisites
 -------------
@@ -59,7 +61,15 @@ Example
     assert iface.status() in\
         [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
 
-    
+How to contribute/ToDo
+----------------------
+
+Following items may be done in the future:
+
+* OS-X Support
+* Rewrite Linux part: communicate with wpa_supplicant via 
+  sockets instead of D-bus
+
 \(C) Jiang Sheng-Jhih 2016, `MIT License`_.
 
 .. _GLib: https://developer.gnome.org/glib/
