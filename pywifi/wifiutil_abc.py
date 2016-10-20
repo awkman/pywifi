@@ -7,14 +7,17 @@ import logging
 from abc import ABCMeta, abstractmethod
 
 
-class WifiUtilABC(metaclass=ABCMeta):
+class WifiUtilABC():
     """
     Abstract class used for each OS implementation.
     
     To support the wifi functions in each OS, implementors should
     finish all the abstract method defined here.
     """
-
+    
+    
+    __metaclass__=ABCMeta #Use old style of defining metaclasses to support Py2
+    
     _logger = None
 
     def __init__(self):
