@@ -22,7 +22,7 @@ else:
     CLIENT_VERSION = 2
 
     
-#PDWORD does not exist in python2 ctypes.wintypes so we fake items
+#PDWORD does not exist in python2 ctypes.wintypes so we fake it
 #Using how its defined in python3 ctypes.wintypes    
 if not "PDWORD" in dir():
     PDWORD = POINTER(DWORD)
