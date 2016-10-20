@@ -21,6 +21,12 @@ if platform.release().lower() == 'xp':
 else:
     CLIENT_VERSION = 2
 
+    
+#PDWORD does not exist in python2 ctypes.wintypes so we fake items
+#Using how its defined in python3 ctypes.wintypes    
+if not "PDWORD" in dir():
+    PDWORD = POINTER(DWORD)
+    
 
 ERROR_SUCCESS = 0
 WLAN_MAX_PHY_TYPE_NUMBER = 8
