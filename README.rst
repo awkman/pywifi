@@ -7,7 +7,7 @@ interfaces.
 * Easy to use
 * Supports Windows and Linux
 
-Now pywifi runs under python 3.5
+Now pywifi runs under python 2.7 & 3.5
 
 Prerequisites
 -------------
@@ -69,6 +69,7 @@ Following items may be done in the future:
 * OS-X Support
 * Rewrite Linux part: communicate with wpa_supplicant via 
   sockets instead of D-bus
+* Documentation
 
 \(C) Jiang Sheng-Jhih 2016, `MIT License`_.
 

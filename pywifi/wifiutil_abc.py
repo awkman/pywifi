@@ -4,10 +4,13 @@
 """Define WifiUtilABC as various OS implementation spec."""
 
 import logging
-from abc import ABCMeta, abstractmethod
+import abc
 
 
-class WifiUtilABC(metaclass=ABCMeta):
+# For compatible with Python 2 *and* 3
+ABC = abc.ABCMeta('ABC', (object,), {})
+
+class WifiUtilABC(ABC):
     """
     Abstract class used for each OS implementation.
     
@@ -15,44 +18,45 @@ class WifiUtilABC(metaclass=ABCMeta):
     finish all the abstract method defined here.
     """
 
+
     _logger = None
 
     def __init__(self):
 
         self._logger = logging.getLogger('pywifi')
 
-    @abstractmethod
+    @abc.abstractmethod
     def scan(self, osobj):
         """Trigger the wifi interface to scan."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def scan_results(self, osobj):
         """Get the AP list after scanning."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def connect(self, osobj, profile):
         """Connect to the specified AP."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def disconnect(self, osobj):
         """Disconnect to the specified AP."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def add_network_profile(self, osobj, profile):
         """Add an AP profile for connecting to afterward."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def network_profiles(self, osobj):
         """Get AP profiles."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def remove_all_network_profiles(self, osobj):
         """Remove all the AP profiles."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def status(self, osobj):
         """Get the wifi interface status."""
 
-    @abstractmethod
+    @abc.abstractmethod
     def interfaces(self):
         """Get the wifi interface lists."""

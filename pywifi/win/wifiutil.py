@@ -21,6 +21,15 @@ if platform.release().lower() == 'xp':
 else:
     CLIENT_VERSION = 2
 
+"""
+Some types does not exist in python2 ctypes.wintypes so we fake them
+using how its defined in python3 ctypes.wintypes.
+"""
+if not "PDWORD" in dir():
+    PDWORD = POINTER(DWORD)
+
+if not "PWCHAR" in dir():
+    PWCHAR= POINTER(WCHAR)
 
 ERROR_SUCCESS = 0
 WLAN_MAX_PHY_TYPE_NUMBER = 8
@@ -43,7 +52,8 @@ status_dict = [
 key_mgmt_dict = {
     'OPEN': AUTH_ALG_OPEN,
     'WPAPSK': AUTH_ALG_WPAPSK,
-    'WPA2PSK': AUTH_ALG_WPA2PSK
+    'WPA2PSK': AUTH_ALG_WPA2PSK,
+    'OTHER': AUTH_ALG_UNKNOWN
 }
 
 
@@ -357,7 +367,11 @@ class WifiUtil(WifiUtilABC):
             profile['ssid'] = re.search(r'<name>(.*)</name>', xml.value).group(1)
             key_mgmt = re.search(r'<authentication>(.*)</authentication>',
                                  xml.value).group(1).upper()
+
             profile['key_mgmt'] = []
+            if key_mgmt not in key_mgmt_dict:
+                key_mgmt = 'OTHER'
+
             profile['key_mgmt'].append(key_mgmt_dict[key_mgmt])
 
             profile_list.append(profile)

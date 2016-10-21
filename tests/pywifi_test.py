@@ -86,9 +86,6 @@ def test_connect():
     iface.remove_all_network_profiles()
     tmp_profile = iface.add_network_profile(profile)
 
-    networks = iface.network_profiles()
-    assert len(networks) == 1
-
     iface.connect(tmp_profile)
     time.sleep(30)
     assert iface.status() == const.IFACE_CONNECTED

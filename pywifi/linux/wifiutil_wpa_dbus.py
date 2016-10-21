@@ -6,9 +6,6 @@
 import dbus
 import urllib
 import copy
-from gi.repository import GLib
-from threading import Thread
-from dbus.mainloop.glib import DBusGMainLoop
 
 from ..wifiutil_abc import WifiUtilABC
 from ..const import *
