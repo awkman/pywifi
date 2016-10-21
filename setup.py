@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='pywifi',
-    version='1.0.1',
+    version='1.0.2',
     author='Jiang Sheng-Jhih',
     author_email='shengjhih@gmail.com',
     description="A cross-platform module for manipulating WiFi devices.",
@@ -20,6 +20,7 @@ setup(
         'Topic :: Utilities',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 2.7',
     ],
     keywords=['wifi', 'wireless', 'Linux', 'Windows'], 
 )
