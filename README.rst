@@ -12,8 +12,9 @@ Now pywifi runs under python 2.7 & 3.5
 Prerequisites
 -------------
 
-On Linux, you will need to install GLib_, which provides PyGI and
-GObject-Introspection in order to query DBus to determine wireless interfaces.
+On Linux, you will need to run wpa_supplicant to manipulate the wifi devices,
+and then pywifi can communicate with wpa_supplicant through socket.
+
 
 On Windows, the `Native Wifi`_ component comes with Windows versions greater
 than Windows XP SP2.
@@ -73,6 +74,5 @@ Following items may be done in the future:
 
 \(C) Jiang Sheng-Jhih 2016, `MIT License`_.
 
-.. _GLib: https://developer.gnome.org/glib/
 .. _Native Wifi: https://msdn.microsoft.com/en-us/library/windows/desktop/ms706556.aspx
 .. _MIT License: https://opensource.org/licenses/MIT

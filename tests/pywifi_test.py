@@ -34,6 +34,8 @@ def test_scan():
     wifi = pywifi.PyWiFi()
 
     iface = wifi.interfaces()[0]
+    iface.scan()
+    time.sleep(5)
     bsses = iface.scan_results()
     assert bsses
 
