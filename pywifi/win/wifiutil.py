@@ -49,13 +49,6 @@ status_dict = [
     IFACE_CONNECTING
 ]
 
-key_mgmt_dict = {
-    'OPEN': AUTH_ALG_OPEN,
-    'WPAPSK': AUTH_ALG_WPAPSK,
-    'WPA2PSK': AUTH_ALG_WPA2PSK,
-    'OTHER': AUTH_ALG_UNKNOWN
-}
-
 
 class WLAN_INTERFACE_INFO(Structure):
 
