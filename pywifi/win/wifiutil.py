@@ -13,6 +13,7 @@ from comtypes import GUID
 
 from ..wifiutil_abc import WifiUtilABC
 from ..const import *
+from ..profile import Profile
 
 
 if platform.release().lower() == 'xp':
@@ -49,13 +50,49 @@ status_dict = [
     IFACE_CONNECTING
 ]
 
-key_mgmt_dict = {
-    'OPEN': AUTH_ALG_OPEN,
-    'WPAPSK': AUTH_ALG_WPAPSK,
-    'WPA2PSK': AUTH_ALG_WPA2PSK,
-    'OTHER': AUTH_ALG_UNKNOWN
+auth_value_to_str_dict = {
+    AUTH_ALG_OPEN: 'OPEN',
+    AUTH_ALG_SHARED: 'SHARED'
 }
 
+auth_str_to_value_dict = {
+    'OPEN': AUTH_ALG_OPEN,
+    'SHARED': AUTH_ALG_SHARED
+}
+
+akm_str_to_value_dict = {
+    'NONE': AKM_TYPE_NONE,
+    'WPA': AKM_TYPE_WPA,
+    'WPAPSK': AKM_TYPE_WPAPSK,
+    'WPA2': AKM_TYPE_WPA2,
+    'WPA2PSK': AKM_TYPE_WPA2PSK,
+    'OTHER': AKM_TYPE_UNKNOWN
+}
+
+akm_value_to_str_dict = {
+    AKM_TYPE_NONE: 'NONE',
+    AKM_TYPE_WPA: 'WPA',
+    AKM_TYPE_WPAPSK: 'WPAPSK',
+    AKM_TYPE_WPA2: 'WPA2',
+    AKM_TYPE_WPA2PSK: 'WPA2PSK',
+    AKM_TYPE_UNKNOWN: 'OTHER'
+}
+
+cipher_str_to_value_dict = {
+    'NONE': CIPHER_TYPE_NONE,
+    'WEP': CIPHER_TYPE_WEP,
+    'TKIP': CIPHER_TYPE_TKIP,
+    'AES': CIPHER_TYPE_CCMP,
+    'OTHER': CIPHER_TYPE_UNKNOWN
+}
+
+cipher_value_to_str_dict = {
+    CIPHER_TYPE_NONE: 'NONE',
+    CIPHER_TYPE_WEP: 'WEP',
+    CIPHER_TYPE_TKIP: 'TKIP',
+    CIPHER_TYPE_CCMP: 'AES',
+    CIPHER_TYPE_UNKNOWN: 'UNKNOWN'
+}
 
 class WLAN_INTERFACE_INFO(Structure):
 
@@ -229,18 +266,20 @@ class WifiUtil(WifiUtilABC):
 
         network_list = []
         for i in range(bss_list.contents.dwNumberOfItems):
-            network = {}
+            network = Profile()
 
-            network['ssid'] = ''
+            network.akm = []
+
+            network.ssid = ''
             for j in range(bsses[i].dot11Ssid.uSSIDLength):
-                network['ssid'] += "%c" % bsses[i].dot11Ssid.ucSSID[j]
+                network.ssid += "%c" % bsses[i].dot11Ssid.ucSSID[j]
 
-            network['bssid'] = ''
+            network.bssid = ''
             for j in range(6):
-                network['bssid'] += "%02x:" % bsses[i].dot11Bssid[j]
-            network['signal'] = bsses[i].lRssi
-            network['freq'] = bsses[i].ulChCenterFrequency
-            network['key_mgmt'] = bsses[i].usCapabilityInformation
+                network.bssid += "%02x:" % bsses[i].dot11Bssid[j]
+            network.signal = bsses[i].lRssi
+            network.freq = bsses[i].ulChCenterFrequency
+            network.auth = bsses[i].usCapabilityInformation
             network_list.append(network)
 
         return network_list
@@ -251,7 +290,7 @@ class WifiUtil(WifiUtilABC):
         connect_params = WLAN_CONNECTION_PARAMETERS()
         connect_params.wlanConnectionMode = 0  # Profile
         connect_params.dot11BssType = 1  # infra
-        profile_name = create_unicode_buffer(params['ssid'])
+        profile_name = create_unicode_buffer(params.ssid)
 
         connect_params.strProfile = profile_name.value
         ret = self._wlan_connect(
@@ -268,16 +307,20 @@ class WifiUtil(WifiUtilABC):
 
         reason_code = DWORD()
 
-        params['auth'] = 'OPEN'
-        if params['key_mgmt'] == AUTH_ALG_WPA2PSK:
-            params['auth'] = 'WPA2PSK'
-            params['encrypt'] = 'AES'
-        elif params['key_mgmt'] == AUTH_ALG_WPAPSK:
-            params['auth'] = 'WPAPSK'
-            params['encrypt'] = 'TKIP'
+        params.process_akm()
+        profile_data = {}
+        profile_data['ssid'] = params.ssid
 
-        params['protected'] = 'false'
-        params['profile_name'] = params['ssid']
+        if params.akm[-1] == AKM_TYPE_NONE:
+            profile_data['auth'] = auth_value_to_str_dict[params.auth]
+        else:
+            profile_data['auth'] = akm_value_to_str_dict[params.akm[-1]]
+
+        profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
+        profile_data['key'] = params.key
+
+        profile_data['protected'] = 'false'
+        profile_data['profile_name'] = params.ssid
 
         xml = """<?xml version="1.0"?>
         <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
@@ -298,11 +341,11 @@ class WifiUtil(WifiUtilABC):
                     </authEncryption>
         """
 
-        if params['key_mgmt'] != AUTH_ALG_OPEN:
+        if params.akm != AKM_TYPE_NONE:
             xml += """<sharedKey>
                         <keyType>passPhrase</keyType>
                         <protected>{protected}</protected>
-                        <keyMaterial>{psk}</keyMaterial>
+                        <keyMaterial>{key}</keyMaterial>
                     </sharedKey>
                 </security>
             </MSM>
@@ -314,7 +357,7 @@ class WifiUtil(WifiUtilABC):
         </WLANProfile>
         """
 
-        xml = xml.format(**params)
+        xml = xml.format(**profile_data)
 
         status = self._wlan_set_profile(self._handle, obj['guid'], xml,
                                         True, byref(reason_code))
@@ -325,9 +368,6 @@ class WifiUtil(WifiUtilABC):
         buf = create_unicode_buffer(64)
         self._wlan_reason_code_to_str(reason_code, buf_size, buf)
         
-        del params['auth']
-        del params['encrypt']
-
         return params
 
     def network_profile_name_list(self, obj):
@@ -356,7 +396,7 @@ class WifiUtil(WifiUtilABC):
 
         profile_list = []
         for profile_name in profile_name_list:
-            profile = {}
+            profile = Profile()
             flags = DWORD()
             access = DWORD()
             xml = LPWSTR()
@@ -364,15 +404,20 @@ class WifiUtil(WifiUtilABC):
                                    profile_name, byref(xml), byref(flags),
                                    byref(access))
             # fill profile info
-            profile['ssid'] = re.search(r'<name>(.*)</name>', xml.value).group(1)
-            key_mgmt = re.search(r'<authentication>(.*)</authentication>',
+            profile.ssid = re.search(r'<name>(.*)</name>', xml.value).group(1)
+            auth = re.search(r'<authentication>(.*)</authentication>',
                                  xml.value).group(1).upper()
 
-            profile['key_mgmt'] = []
-            if key_mgmt not in key_mgmt_dict:
-                key_mgmt = 'OTHER'
-
-            profile['key_mgmt'].append(key_mgmt_dict[key_mgmt])
+            profile.akm = []
+            if auth not in akm_str_to_value_dict:
+                if auth not in auth_str_to_value_dict:
+                    profile.auth = AUTH_ALG_OPEN
+                else:
+                    profile.auth = auth_str_to_value_dict[auth]
+                    profile.akm.append(AKM_TYPE_NONE)
+            else:
+                    profile.auth = AUTH_ALG_OPEN
+                    profile.akm.append(akm_str_to_value_dict[auth])
 
             profile_list.append(profile)
 

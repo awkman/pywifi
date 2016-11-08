@@ -11,6 +11,7 @@ This library is made for manipulating wifi device on varient platforms.
 import logging
 
 from . import const 
+from .profile import Profile
 from .wifi import PyWiFi
 
 

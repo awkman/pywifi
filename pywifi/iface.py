@@ -53,11 +53,13 @@ class Interface:
         if self._logger.isEnabledFor(logging.INFO):
             for bss in bsses:
                 self._logger.info("Find bss:")
-                self._logger.info("\tbssid: %s", bss['bssid'])
-                self._logger.info("\tssid: %s", bss['ssid'])
-                self._logger.info("\tfreq: %d", bss['freq'])
-                self._logger.info("\tkey_mgmt: %s", bss['key_mgmt'])
-                self._logger.info("\tsignal: %d", bss['signal'])
+                self._logger.info("\tbssid: %s", bss.bssid)
+                self._logger.info("\tssid: %s", bss.ssid)
+                self._logger.info("\tfreq: %d", bss.freq)
+                self._logger.info("\tauth: %s", bss.auth)
+                self._logger.info("\takm: %s", bss.akm)
+                self._logger.info("\tcipher: %s", bss.auth)
+                self._logger.info("\tsignal: %d", bss.signal)
 
         return bsses
 
@@ -84,8 +86,10 @@ class Interface:
         if self._logger.isEnabledFor(logging.INFO):
             for profile in profiles:
                 self._logger.info("Get profile:")
-                self._logger.info("\tssid: %s", profile['ssid'])
-                self._logger.info("\tkey_mgmt: %s", profile['key_mgmt'])
+                self._logger.info("\tssid: %s", profile.ssid)
+                self._logger.info("\tauth: %s", profile.auth)
+                self._logger.info("\takm: %s", profile.akm)
+                self._logger.info("\tcipher: %s", profile.cipher)
 
         return profiles
 
@@ -93,7 +97,7 @@ class Interface:
         """Connect to the specified AP."""
 
         self._logger.info("iface '%s' connects to AP: '%s'",
-                          self.name(), params['ssid'])
+                          self.name(), params.ssid)
 
         self._wifi_ctrl.connect(self._raw_obj, params)
 

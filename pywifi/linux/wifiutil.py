@@ -10,6 +10,7 @@ import os
 
 from ..wifiutil_abc import WifiUtilABC
 from ..const import *
+from ..profile import Profile
 
 CTRL_IFACE_DIR = '/var/run/wpa_supplicant'
 CTRL_IFACE_RETRY = 3
@@ -28,28 +29,24 @@ status_dict = {
     'scanning': IFACE_SCANNING
 }
 
-auth_alg_to_id = {
-    'NONE': AUTH_ALG_OPEN,
-    'SHARED': AUTH_ALG_SHARED,
-}
 
 key_mgmt_to_str = {
-    AUTH_ALG_WPAPSK: 'WPA-PSK',
-    AUTH_ALG_WPA2PSK: 'WPA-PSK'
-}
-
-key_mgmt_to_id = {
-    'WPA-PSK': AUTH_ALG_WPAPSK,
+    AKM_TYPE_WPA: 'WPA-EAP',
+    AKM_TYPE_WPAPSK: 'WPA-PSK',
+    AKM_TYPE_WPA2: 'WPA-EAP',
+    AKM_TYPE_WPA2PSK: 'WPA-PSK'
 }
 
 key_mgmt_to_proto_str = {
-    AUTH_ALG_WPAPSK: 'WPA',
-    AUTH_ALG_WPA2PSK: 'RSN'
+    AKM_TYPE_WPA: 'WPA',
+    AKM_TYPE_WPAPSK: 'WPA',
+    AKM_TYPE_WPA2: 'RSN',
+    AKM_TYPE_WPA2PSK: 'RSN'
 }
 
 proto_to_key_mgmt_id = {
-    'WPA': AUTH_ALG_WPAPSK,
-    'RSN': AUTH_ALG_WPA2PSK
+    'WPA': AKM_TYPE_WPAPSK,
+    'RSN': AKM_TYPE_WPA2PSK
 }
 
 class WifiUtil(WifiUtilABC):
@@ -73,19 +70,22 @@ class WifiUtil(WifiUtilABC):
 
         for l in bsses_summary[1:]:
             values = l.split('\t')
-            bss = {}
-            bss['bssid'] = values[0]
-            bss['freq'] = int(values[1])
-            bss['signal'] = int(values[2])
-            bss['ssid'] = values[4]
-            bss['key_mgmt'] = []
+            bss = Profile()
+            bss.bssid = values[0]
+            bss.freq = int(values[1])
+            bss.signal = int(values[2])
+            bss.ssid = values[4]
+            bss.akm = []
             if 'WPA-PSK' in values[3]:
-                bss['key_mgmt'].append(AUTH_ALG_WPAPSK)
+                bss.akm.append(AKM_TYPE_WPAPSK)
             if 'WPA2-PSK' in values[3]:
-                bss['key_mgmt'].append(AUTH_ALG_WPA2PSK)
+                bss.akm.append(AKM_TYPE_WPA2PSK)
+            if 'WPA-EAP' in values[3]:
+                bss.akm.append(AKM_TYPE_WPA)
+            if 'WPA2-EAP' in values[3]:
+                bss.akm.append(AKM_TYPE_WPA2)
 
-            if bss['key_mgmt'] is False:
-                bss['key_mgmt'] = AUTH_ALG_OPEN
+            bss.auth = AUTH_ALG_OPEN
 
             bsses.append(bss)
 
@@ -104,7 +104,7 @@ class WifiUtil(WifiUtilABC):
 
         for l in network_summary[1:]:
             values = l.split('\t')
-            if values[1] == network['ssid']:
+            if values[1] == network.ssid:
                 network_summary = self._send_cmd_to_wpas(
                     obj['name'],
                     'SELECT_NETWORK {}'.format(values[0]),
@@ -121,27 +121,42 @@ class WifiUtil(WifiUtilABC):
         network_id = self._send_cmd_to_wpas(obj['name'], 'ADD_NETWORK', True)
         network_id = network_id.strip()
 
-        self._send_cmd_to_wpas(
-                obj['name'],
-                'SET_NETWORK {} ssid \"{}\"'.format(network_id, params['ssid']))
+        params.process_akm()
 
         self._send_cmd_to_wpas(
                 obj['name'],
-                'SET_NETWORK {} key_mgmt {}'.format(
-                    network_id,
-                    key_mgmt_to_str[params['key_mgmt']]))
+                'SET_NETWORK {} ssid \"{}\"'.format(network_id, params.ssid))
 
-        if params['key_mgmt'] in [AUTH_ALG_WPAPSK, AUTH_ALG_WPA2PSK]:
+        key_mgmt = ''
+        if params.akm[-1] in [AKM_TYPE_WPAPSK, AKM_TYPE_WPA2PSK]:
+            key_mgmt = 'WPA-PSK'
+        elif params.akm[-1] in [AKM_TYPE_WPA, AKM_TYPE_WPA2]:
+            key_mgmt = 'WPA-EAP'
+
+        if key_mgmt:
+            self._send_cmd_to_wpas(
+                    obj['name'],
+                    'SET_NETWORK {} key_mgmt {}'.format(
+                        network_id,
+                        key_mgmt))
+
+        proto = ''
+        if params.akm[-1] in [AKM_TYPE_WPAPSK, AKM_TYPE_WPA]:
+            proto = 'WPA'
+        elif params.akm[-1] in [AKM_TYPE_WPA2PSK, AKM_TYPE_WPA2]:
+            proto = 'RSN'
+
+        if proto:
             self._send_cmd_to_wpas(
                     obj['name'],
                     'SET_NETWORK {} proto {}'.format(
                         network_id,
-                        key_mgmt_to_proto_str[params['key_mgmt']]))
+                        proto))
 
-        if params['key_mgmt'] != AUTH_ALG_OPEN:
+        if params.akm[-1] in [AKM_TYPE_WPAPSK, AKM_TYPE_WPA2PSK]:
             self._send_cmd_to_wpas(
                     obj['name'],
-                    'SET_NETWORK {} psk \"{}\"'.format(network_id, params['psk']))
+                    'SET_NETWORK {} psk \"{}\"'.format(network_id, params.key))
 
             return params
 
@@ -162,20 +177,23 @@ class WifiUtil(WifiUtilABC):
             network_ids.append(l.split()[0])
 
         for network_id in network_ids:
-            network = {}
+            network = Profile()
+
+
             ssid = self._send_cmd_to_wpas(
                 obj['name'],
                 'GET_NETWORK {} ssid'.format(network_id), True)
             if ssid.upper().startswith('FAIL'):
                 break
             else:
-                network['ssid'] = ssid[1:-1]
+                network.ssid = ssid[1:-1]
 
             key_mgmt = self._send_cmd_to_wpas(
                 obj['name'],
                 'GET_NETWORK {} key_mgmt'.format(network_id),
                 True)
-            network['key_mgmt'] = []
+
+            network.akm = []
             if key_mgmt.upper().startswith('FAIL'):
                 break
             else:
@@ -185,7 +203,20 @@ class WifiUtil(WifiUtilABC):
                         'GET_NETWORK {} proto'.format(network_id),
                         True)
 
-                    network['key_mgmt'].append(proto_to_key_mgmt_id[proto])
+                    if proto.upper() == 'RSN':
+                        network.akm.append(AKM_TYPE_WPA2PSK)
+                    else:
+                        network.akm.append(AKM_TYPE_WPAPSK)
+                elif key_mgmt.uppler() in ['WPA-EAP']:
+                    proto = self._send_cmd_to_wpas(
+                        obj['name'],
+                        'GET_NETWORK {} proto'.format(network_id),
+                        True)
+
+                    if proto.upper() == 'RSN':
+                        network.akm.append(AKM_TYPE_WPA2)
+                    else:
+                        network.akm.append(AKM_TYPE_WPA)
 
             networks.append(network)
 

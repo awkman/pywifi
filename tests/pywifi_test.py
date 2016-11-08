@@ -45,9 +45,13 @@ def test_add_network_profile():
     wifi = pywifi.PyWiFi()
 
     iface = wifi.interfaces()[0]
-    profile = {'ssid': 'testap',
-               'key_mgmt': const.AUTH_ALG_WPA2PSK,
-               'psk': '12345678'}
+
+    profile = pywifi.Profile()
+    profile.ssid = 'testap'
+    profile.auth = const.AUTH_ALG_OPEN
+    profile.akm.append(const.AKM_TYPE_WPA2PSK)
+    profile.cipher = const.CIPHER_TYPE_CCMP
+    profile.key = '12345678'
 
     iface.remove_all_network_profiles()
 
@@ -57,8 +61,9 @@ def test_add_network_profile():
     profiles = iface.network_profiles()
 
     assert profiles is not None
-    assert profiles[0]['ssid'] == "testap"
-    assert const.AUTH_ALG_WPA2PSK in profiles[0]['key_mgmt']
+    assert profiles[0].ssid == "testap"
+    assert const.AKM_TYPE_WPA2PSK in profiles[0].akm
+    assert const.AUTH_ALG_OPEN == profiles[0].auth
 
 
 def test_status():
@@ -81,15 +86,18 @@ def test_connect():
     assert iface.status() in\
         [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
 
-    profile = {'ssid': 'testap',
-               'key_mgmt': pywifi.const.AUTH_ALG_WPA2PSK,
-               'psk': '12345678'}
+    profile = pywifi.Profile()
+    profile.ssid = 'testap'
+    profile.auth = const.AUTH_ALG_OPEN
+    profile.akm.append(const.AKM_TYPE_WPA2PSK)
+    profile.cipher = const.CIPHER_TYPE_CCMP
+    profile.key = '12345678'
 
     iface.remove_all_network_profiles()
     tmp_profile = iface.add_network_profile(profile)
 
     iface.connect(tmp_profile)
-    time.sleep(30)
+    time.sleep(40)
     assert iface.status() == const.IFACE_CONNECTED
 
     iface.disconnect()
