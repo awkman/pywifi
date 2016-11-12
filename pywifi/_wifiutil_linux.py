@@ -8,9 +8,8 @@ import socket
 import stat
 import os
 
-from ..wifiutil_abc import WifiUtilABC
-from ..const import *
-from ..profile import Profile
+from .const import *
+from .profile import Profile
 
 CTRL_IFACE_DIR = '/var/run/wpa_supplicant'
 CTRL_IFACE_RETRY = 3
@@ -49,10 +48,11 @@ proto_to_key_mgmt_id = {
     'RSN': AKM_TYPE_WPA2PSK
 }
 
-class WifiUtil(WifiUtilABC):
+class WifiUtil():
     """WifiUtil implements the wifi functions in Linux."""
 
     _connections = {}
+    _logger = logging.getLogger('pywifi')
 
     def scan(self, obj):
         """Trigger the wifi interface to scan."""

@@ -11,9 +11,8 @@ from ctypes import *
 from ctypes.wintypes import *
 from comtypes import GUID
 
-from ..wifiutil_abc import WifiUtilABC
-from ..const import *
-from ..profile import Profile
+from .const import *
+from .profile import Profile
 
 
 if platform.release().lower() == 'xp':
@@ -243,12 +242,13 @@ class WLAN_PROFILE_INFO_LIST(Structure):
     ]
 
 
-class WifiUtil(WifiUtilABC):
+class WifiUtil():
     """WifiUtil implements the wifi functions in Windows."""
 
     _nego_version = DWORD()
     _handle = HANDLE()
     _ifaces = pointer(WLAN_INTERFACE_INFO_LIST())
+    _logger = logging.getLogger('pywifi')
 
     def scan(self, obj):
         """Trigger the wifi interface to scan."""

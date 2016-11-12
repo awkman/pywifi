@@ -16,9 +16,9 @@ from .iface import Interface
 
 
 if platform.system().lower() == 'windows':
-    from .win import wifiutil
+    from . import _wifiutil_win as wifiutil
 elif platform.system().lower() == 'linux':
-    from .linux import wifiutil
+    from . import _wifiutil_linux as wifiutil
 else:
     raise NotImplementedError
 
