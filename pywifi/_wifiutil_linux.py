@@ -207,7 +207,7 @@ class WifiUtil():
                         network.akm.append(AKM_TYPE_WPA2PSK)
                     else:
                         network.akm.append(AKM_TYPE_WPAPSK)
-                elif key_mgmt.uppler() in ['WPA-EAP']:
+                elif key_mgmt.upper() in ['WPA-EAP']:
                     proto = self._send_cmd_to_wpas(
                         obj['name'],
                         'GET_NETWORK {} proto'.format(network_id),
