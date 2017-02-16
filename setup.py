@@ -7,11 +7,14 @@ except ImportError:
 
 setup(
     name='pywifi',
-    version='1.1.5',
+    version='1.1.6',
     author='Jiang Sheng-Jhih',
     author_email='shengjhih@gmail.com',
     description="A cross-platform module for manipulating WiFi devices.",
     packages=find_packages(),
+    install_requires=[
+        'comtypes'
+    ],
     url='https://github.com/awkman/pywifi', 
     license='MIT',
     download_url='https://github.com/awkman/pywifi/archive/master.zip', 
