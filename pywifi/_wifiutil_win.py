@@ -258,29 +258,48 @@ class WifiUtil():
     def scan_results(self, obj):
         """Get the AP list after scanning."""
 
-        bss_list = pointer(WLAN_BSS_LIST())
-        self._wlan_get_network_bss_list(self._handle,
-            byref(obj['guid']), byref(bss_list))
-        bsses = cast(bss_list.contents.wlanBssEntries,
-                     POINTER(WLAN_BSS_ENTRY))
+        avail_network_list = pointer(WLAN_AVAILABLE_NETWORK_LIST())
+        self._wlan_get_available_network_list(self._handle,
+            byref(obj['guid']), byref(avail_network_list))
+        networks = cast(avail_network_list.contents.Network,
+                     POINTER(WLAN_AVAILABLE_NETWORK))
 
         network_list = []
-        for i in range(bss_list.contents.dwNumberOfItems):
-            network = Profile()
+        for i in range(avail_network_list.contents.dwNumberOfItems):
 
-            network.akm = []
+            if networks[i].dot11BssType == 1 and networks[i].bNetworkConnectable :
 
-            network.ssid = ''
-            for j in range(bsses[i].dot11Ssid.uSSIDLength):
-                network.ssid += "%c" % bsses[i].dot11Ssid.ucSSID[j]
+                ssid = ''
+                for j in range(networks[i].dot11Ssid.uSSIDLength):
+                    ssid += "%c" % networks[i].dot11Ssid.ucSSID[j]
 
-            network.bssid = ''
-            for j in range(6):
-                network.bssid += "%02x:" % bsses[i].dot11Bssid[j]
-            network.signal = bsses[i].lRssi
-            network.freq = bsses[i].ulChCenterFrequency
-            network.auth = bsses[i].usCapabilityInformation
-            network_list.append(network)
+                bss_list = pointer(WLAN_BSS_LIST())
+                self._wlan_get_network_bss_list(self._handle,
+                    byref(obj['guid']), byref(bss_list), networks[i].dot11Ssid, networks[i].bSecurityEnabled)
+                bsses = cast(bss_list.contents.wlanBssEntries,
+                             POINTER(WLAN_BSS_ENTRY))
+
+                if networks[i].bSecurityEnabled:
+                    akm = self._get_akm(networks[i].dot11DefaultCipherAlgorithm)
+                    auth_alg = self._get_auth_alg(networks[i].dot11DefaultAuthAlgorithm)
+                else:
+                    akm = [AKM_TYPE_NONE]
+                    auth_alg = [AUTH_ALG_OPEN]
+
+                for j in range(bss_list.contents.dwNumberOfItems):
+                    network = Profile()
+
+                    network.ssid = ssid
+
+                    network.bssid = ''
+                    for k in range(6):
+                        network.bssid += "%02x:" % bsses[j].dot11Bssid[k]
+
+                    network.signal = bsses[j].lRssi
+                    network.freq = bsses[j].ulChCenterFrequency
+                    network.auth = auth_alg
+                    network.akm = akm
+                    network_list.append(network)
 
         return network_list
 
@@ -493,22 +512,21 @@ class WifiUtil():
 
     def _wlan_get_available_network_list(self, handle,
                                          iface_guid,
-                                         flags, network_list):
+                                         network_list):
 
         func = native_wifi.WlanGetAvailableNetworkList
         func.argtypes = [HANDLE, POINTER(GUID), DWORD, c_void_p, POINTER(
             POINTER(WLAN_AVAILABLE_NETWORK_LIST))]
         func.restypes = [DWORD]
-        return func(handle, iface_guid, flags, None, network_list)
+        return func(handle, iface_guid, 2, None, network_list)
 
-    def _wlan_get_network_bss_list(self, handle, iface_guid, bss_list):
+    def _wlan_get_network_bss_list(self, handle, iface_guid, bss_list, ssid = None, security = False):
 
         func = native_wifi.WlanGetNetworkBssList
         func.argtypes = [HANDLE, POINTER(GUID), POINTER(
             DOT11_SSID), c_uint, c_bool, c_void_p, POINTER(POINTER(WLAN_BSS_LIST))]
         func.restypes = [DWORD]
-        return func(handle, iface_guid, None, 1, False, None, bss_list)
-
+        return func(handle, iface_guid, ssid, 1, security, None, bss_list)
 
     def _wlan_scan(self, handle, iface_guid):
 
@@ -578,3 +596,23 @@ class WifiUtil():
         func.argtypes = [HANDLE, POINTER(GUID), c_void_p]
         func.restypes = [DWORD]
         return func(handle, iface_guid, None)
+
+    def _get_auth_alg(self, auth_val):
+
+        auth_alg = []
+        if auth_val in [1, 3, 4, 6, 7]:
+            auth_alg.append(AUTH_ALG_OPEN)
+        elif auth_val == 2:
+            auth_alg.append(AUTH_ALG_SHARED)
+
+        return auth_alg
+
+    def _get_akm(self, akm_val):
+
+        akm = []
+        if akm_val == 2:
+            akm.append(AKM_TYPE_WPAPSK)
+        elif akm_val == 4:
+            akm.append(AKM_TYPE_WPA2PSK)
+
+        return akm

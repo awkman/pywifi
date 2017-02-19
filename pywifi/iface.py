@@ -58,7 +58,6 @@ class Interface:
                 self._logger.info("\tfreq: %d", bss.freq)
                 self._logger.info("\tauth: %s", bss.auth)
                 self._logger.info("\takm: %s", bss.akm)
-                self._logger.info("\tcipher: %s", bss.auth)
                 self._logger.info("\tsignal: %d", bss.signal)
 
         return bsses
