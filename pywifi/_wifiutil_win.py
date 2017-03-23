@@ -264,6 +264,7 @@ class WifiUtil():
         networks = cast(avail_network_list.contents.Network,
                      POINTER(WLAN_AVAILABLE_NETWORK))
 
+        self._logger.debug("Scan found {0} networks.".format(avail_network_list.contents.dwNumberOfItems))
         network_list = []
         for i in range(avail_network_list.contents.dwNumberOfItems):
 
@@ -271,7 +272,8 @@ class WifiUtil():
 
                 ssid = ''
                 for j in range(networks[i].dot11Ssid.uSSIDLength):
-                    ssid += "%c" % networks[i].dot11Ssid.ucSSID[j]
+                    if networks[i].dot11Ssid.ucSSID != b'':
+                        ssid += "%c" % networks[i].dot11Ssid.ucSSID[j]
 
                 bss_list = pointer(WLAN_BSS_LIST())
                 self._wlan_get_network_bss_list(self._handle,
