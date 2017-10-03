@@ -106,6 +106,34 @@ def test_connect():
         [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
 
 
+def test_connect_open():
+
+    wifi = pywifi.PyWiFi()
+
+    iface = wifi.interfaces()[0]
+
+    iface.disconnect()
+    time.sleep(1)
+    assert iface.status() in\
+        [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
+
+    profile = pywifi.Profile()
+    profile.ssid = 'testap'
+    profile.auth = const.AUTH_ALG_OPEN
+    profile.akm.append(const.AKM_TYPE_NONE)
+
+    iface.remove_all_network_profiles()
+    tmp_profile = iface.add_network_profile(profile)
+
+    iface.connect(tmp_profile)
+    time.sleep(40)
+    assert iface.status() == const.IFACE_CONNECTED
+
+    iface.disconnect()
+    time.sleep(1)
+    assert iface.status() in\
+        [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
+
 def test_disconnect():
 
     wifi = pywifi.PyWiFi()

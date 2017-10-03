@@ -132,6 +132,8 @@ class WifiUtil():
             key_mgmt = 'WPA-PSK'
         elif params.akm[-1] in [AKM_TYPE_WPA, AKM_TYPE_WPA2]:
             key_mgmt = 'WPA-EAP'
+        else:
+            key_mgmt = 'NONE'
 
         if key_mgmt:
             self._send_cmd_to_wpas(
@@ -158,7 +160,7 @@ class WifiUtil():
                     obj['name'],
                     'SET_NETWORK {} psk \"{}\"'.format(network_id, params.key))
 
-            return params
+        return params
 
     def network_profiles(self, obj):
         """Get AP profiles."""
