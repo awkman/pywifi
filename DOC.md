@@ -95,7 +95,7 @@ iface.connect(profile)
 An **Interface** means the Wi-Fi interface which we use to perform
 Wi-Fi operations (e.g. scan, connect, disconnect, ...).
 
-## Get interface information
+### Get interface information
 
 In general, there will be only one Wi-Fi interface in the platform.
 Thus, use index *0* to obtain the Wi-Fi interface.
@@ -121,8 +121,8 @@ Obtain the results of the previous triggerred scan.
 A **Profile** list will be returned.
 
 *Note.* Because the scan time for each Wi-Fi interface is variant.
-It is safter tko call ```scan_results()``` 2 ~ 8 seconds later after
-```calling scan()```.
+It is safer to call ```scan_results()``` 2 ~ 8 seconds later after
+calling ```scan()```.
 
 ### Interface.add_network_profile(*profile*)
 
