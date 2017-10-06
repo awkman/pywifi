@@ -12,11 +12,11 @@ Before using the constants, please remember to ```import pywifi```.
 ```Interface.status()``` will return one of the status code below.
 
 ```
-	const.IFACE_DISCONNECTED
-	const.IFACE_SCANNING
-	const.IFACE_INACTIVE
-	const.IFACE_CONNECTING
-	const.IFACE_CONNECTED
+const.IFACE_DISCONNECTED
+const.IFACE_SCANNING
+const.IFACE_INACTIVE
+const.IFACE_CONNECTING
+const.IFACE_CONNECTED
 ```
 
 ### Authentication Algorithms
@@ -25,8 +25,8 @@ Authentication algorithm should be assined to a *Profile*.
 For normal case, almost all the APs use *open* algorithm.
 
 ```
-	const.AUTH_OPEN
-	const.AUTH_SHARED
+const.AUTH_OPEN
+const.AUTH_SHARED
 ```
 
 ### Key Management Type
@@ -41,11 +41,11 @@ For normal APs, if
 ```AKM_TYPE_WPA``` and ```AKM_TYPE_WPA2``` are used by the enterprise APs.
 
 ```
-	const.AKM_TYPE_NONE
-	const.AKM_TYPE_WPA
-	const.AKM_TYPE_WPAPSK
-	const.AKM_TYPE_WPA2
-	const.AKM_TYPE_WPA2PSK
+const.AKM_TYPE_NONE
+const.AKM_TYPE_WPA
+const.AKM_TYPE_WPAPSK
+const.AKM_TYPE_WPA2
+const.AKM_TYPE_WPA2PSK
 ```
 
 ### Cipher Types
@@ -54,10 +54,10 @@ The cipher type should be set to the *Profile* if the akm is not ```AKM_TYPE_NON
 You can refer to the setting of the AP you want to connect to.
 
 ```
-	const.CIPHER_TYPE_NONE
-	const.CIPHER_TYPE_WEP
-	const.CIPHER_TYPE_TKIP
-	const.CIPHER_TYPE_CCMP
+const.CIPHER_TYPE_NONE
+const.CIPHER_TYPE_WEP
+const.CIPHER_TYPE_TKIP
+const.CIPHER_TYPE_CCMP
 ```
 
 ## Network Profile
@@ -75,19 +75,19 @@ This should be set if the cipher is not ```CIPHER_TYPE_NONE```.
 Example:
 
 ```
-	import pywifi
+import pywifi
 
-    profile = pywifi.Profile()
-    profile.ssid = 'testap'
-    profile.auth = const.AUTH_ALG_OPEN
-    profile.akm.append(const.AKM_TYPE_WPA2PSK)
-    profile.cipher = const.CIPHER_TYPE_CCMP
-    profile.key = '12345678'
+profile = pywifi.Profile()
+profile.ssid = 'testap'
+profile.auth = const.AUTH_ALG_OPEN
+profile.akm.append(const.AKM_TYPE_WPA2PSK)
+profile.cipher = const.CIPHER_TYPE_CCMP
+profile.key = '12345678'
 
-	wifi = pywifi.PyWiFi()
-	iface = wifi.interfaces()[0]
-	profile = iface.add_network_profile(profile)
-	iface.connect(profile)
+wifi = pywifi.PyWiFi()
+iface = wifi.interfaces()[0]
+profile = iface.add_network_profile(profile)
+iface.connect(profile)
 ```
 
 ## Interface
@@ -101,10 +101,10 @@ In general, there will be only one Wi-Fi interface in the platform.
 Thus, use index *0* to obtain the Wi-Fi interface.
 
 ```
-	import pywifi
+import pywifi
 
-	wifi = pywifi.PyWiFi()
-	iface = wifi.interfaces()[0]
+wifi = pywifi.PyWiFi()
+iface = wifi.interfaces()[0]
 ```
 
 ### Interface.name()
