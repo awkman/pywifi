@@ -12,7 +12,7 @@ if platform.system().lower() == 'windows':
 elif platform.system().lower() == 'linux':
     from . import _wifiutil_linux as wifiutil
 else:
-    raise NotImplementedError
+    from . import _wifiutil_macos as wifiutil
 
 
 class Interface:
