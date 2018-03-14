@@ -50,13 +50,13 @@ status_dict = [
 ]
 
 auth_value_to_str_dict = {
-    AUTH_ALG_OPEN: 'OPEN',
-    AUTH_ALG_SHARED: 'SHARED'
+    AUTH_ALG_OPEN: 'open',
+    AUTH_ALG_SHARED: 'shared'
 }
 
 auth_str_to_value_dict = {
-    'OPEN': AUTH_ALG_OPEN,
-    'SHARED': AUTH_ALG_SHARED
+    'open': AUTH_ALG_OPEN,
+    'shared': AUTH_ALG_SHARED
 }
 
 akm_str_to_value_dict = {
@@ -335,12 +335,13 @@ class WifiUtil():
         profile_data = {}
         profile_data['ssid'] = params.ssid
 
-        if params.akm[-1] == AKM_TYPE_NONE:
+        if AKM_TYPE_NONE in params.akm:
             profile_data['auth'] = auth_value_to_str_dict[params.auth]
+            profile_data['encrypt'] = "none"
         else:
             profile_data['auth'] = akm_value_to_str_dict[params.akm[-1]]
+            profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
 
-        profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
         profile_data['key'] = params.key
 
         profile_data['protected'] = 'false'
@@ -365,15 +366,16 @@ class WifiUtil():
                     </authEncryption>
         """
 
-        if params.akm != AKM_TYPE_NONE:
+        if AKM_TYPE_NONE not in params.akm:
             xml += """<sharedKey>
                         <keyType>passPhrase</keyType>
                         <protected>{protected}</protected>
                         <keyMaterial>{key}</keyMaterial>
-                    </sharedKey>
+                    </sharedKey>"""
+
+        xml += """
                 </security>
-            </MSM>
-            """
+            </MSM>"""
 
         xml += """<MacRandomization xmlns="http://www.microsoft.com/networking/WLAN/profile/v3">
                 <enableRandomization>false</enableRandomization>
