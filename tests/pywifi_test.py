@@ -71,6 +71,7 @@ def test_status():
     wifi = pywifi.PyWiFi()
 
     iface = wifi.interfaces()[0]
+    iface.disconnect()
     assert iface.status() in\
         [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
 
