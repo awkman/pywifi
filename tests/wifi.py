@@ -14,33 +14,15 @@ for i in range(len(result)):
     SIGNAL = result[i].signal
     RSSI = SIGNAL
     length = pow(10, ((abs(RSSI) - A) / (10 * n)))
+    '''
     if SSID != "NWPU-WLAN":
         if SSID != "NWPU-CHANGAN":
             if SSID != "CMCC-EDU":
                 if SSID != "CMCC-xbgy":
-                    if SSID != "CMCC-freegame":
-                        s = SSID.encode()
-                        cnt = 0
-                        res = 0
-                        lst = []
-                        name = ""
-                        for char in SSID :
-                            if (33<=ord(char)<=126) :
-                                name = name + char
-                            else :
-                                cnt = cnt + 1
-                                now = int(str(bin(ord(char)))[2:6],2)
-                                now1 = int(str(bin(ord(char)))[6:10], 2)
-                                res = res + now * 16 + now1
-                                lst.append(res)
-                                res = 0
-                                if cnt == 3 :
-                                    name = name +bytes(lst).decode('utf-8','ignore')
-                                    lst = []
-                                    res = 0
-                                    cnt = 0
-                        print(str(name) + ' ' + str(SIGNAL) + " %.2f" % length + ' m')
-
+                    if SSID != "CMCC-freegame" :
+    '''
+    if SSID != "" :
+        print(str(SSID) + ' ' + str(SIGNAL) + " %.2f" % length + ' m')
 
 
     '''length=pow(10,((abs(RSSI) - A) / (10 * n)))
