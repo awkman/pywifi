@@ -90,7 +90,7 @@ cipher_value_to_str_dict = {
     CIPHER_TYPE_WEP: 'WEP',
     CIPHER_TYPE_TKIP: 'TKIP',
     CIPHER_TYPE_CCMP: 'AES',
-    CIPHER_TYPE_UNKNOWN: 'UNKtemp_nowN'
+    CIPHER_TYPE_UNKNOWN: 'UNKNOWN'
 }
 
 class WLAN_INTERFACE_INFO(Structure):
