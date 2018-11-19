@@ -163,7 +163,7 @@ class WifiUtil():
         if params.hidden:
             self._send_cmd_to_wpas(
                     obj['name'],
-                    'SET_NETWORK {} scan_ssid \{}\"'.format(network_id, 1))
+                    'SET_NETWORK {} scan_ssid \"{}\"'.format(network_id, 1))
 
         return params
 
