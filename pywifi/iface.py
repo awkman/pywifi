@@ -89,6 +89,7 @@ class Interface:
                 self._logger.info("\tauth: %s", profile.auth)
                 self._logger.info("\takm: %s", profile.akm)
                 self._logger.info("\tcipher: %s", profile.cipher)
+                self._logger.info("\thidden: %s", profile.hidden)
 
         return profiles
 
