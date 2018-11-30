@@ -245,7 +245,7 @@ class WifiUtil():
         """Get the wifi interface lists."""
         
         ifaces = []
-        for f in os.listdir(CTRL_IFACE_DIR):
+        for f in sorted(os.listdir(CTRL_IFACE_DIR)):
             sock_file = '/'.join([CTRL_IFACE_DIR, f])
             mode = os.stat(sock_file).st_mode
             if stat.S_ISSOCK(mode):
@@ -264,7 +264,7 @@ class WifiUtil():
                 "Connection for iface '%s' aleady existed!",
                 iface)
 
-        sock_file = '{}/{}_{}'.format('/tmp', 'pywifi', 'iface')
+        sock_file = '{}/{}_{}'.format('/tmp', 'pywifi', iface)
         self._remove_existed_sock(sock_file)
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         sock.bind(sock_file)
