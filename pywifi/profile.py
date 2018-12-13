@@ -8,14 +8,14 @@ from .const import *
 
 class Profile():
 
-    def __init__(self):
+    def __init__(self, auth=AUTH_ALG_OPEN, akm=[AKM_TYPE_NONE], cipher=CIPHER_TYPE_NONE, ssid=None, bssid=None, key=None):
 
-        self.auth = AUTH_ALG_OPEN
-        self.akm = [AKM_TYPE_NONE]
-        self.cipher = CIPHER_TYPE_NONE
-        self.ssid = None
-        self.bssid = None
-        self.key = None
+        self.auth = auth
+        self.akm = akm
+        self.cipher = cipher
+        self.ssid = ssid
+        self.bssid = bssid
+        self.key = key
 
     def process_akm(self):
 
