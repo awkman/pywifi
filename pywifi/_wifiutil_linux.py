@@ -160,6 +160,11 @@ class WifiUtil():
                     obj['name'],
                     'SET_NETWORK {} psk \"{}\"'.format(network_id, params.key))
 
+        if params.hidden:
+            self._send_cmd_to_wpas(
+                    obj['name'],
+                    'SET_NETWORK {} scan_ssid {}'.format(network_id, 1))
+
         return params
 
     def network_profiles(self, obj):

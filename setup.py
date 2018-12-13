@@ -6,18 +6,18 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name='pywifi',
-    version='1.1.10',
-    author='Jiang Sheng-Jhih',
-    author_email='shengjhih@gmail.com',
+    name='pywifimotius',
+    version='1.2',
+    author='Shiyue Liu',
+    author_email='shiyue.liu@motius.de',
     description="A cross-platform module for manipulating WiFi devices.",
     packages=find_packages(),
     install_requires=[
         'comtypes'
     ],
-    url='https://github.com/awkman/pywifi', 
+    url='https://github.com/motius/pywifi', 
     license='MIT',
-    download_url='https://github.com/awkman/pywifi/archive/master.zip', 
+    download_url='https://github.com/motius/pywifi/archive/master.zip', 
     classifiers=[
         'Intended Audience :: Developers',
         'Topic :: Utilities',
