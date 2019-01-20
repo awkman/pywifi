@@ -21,3 +21,27 @@ class Profile():
 
         if len(self.akm) > 1:
             self.akm = self.akm[-1:]
+
+    def __eq__(self, profile):
+
+        if profile.ssid:
+            if profile.ssid != self.ssid:
+                return False
+
+        if profile.bssid:
+            if profile.bssid != self.bssid:
+                return False
+
+        if profile.auth:
+            if profile.auth!= self.auth:
+                return False
+
+        if profile.cipher:
+            if profile.cipher != self.cipher:
+                return False
+
+        if profile.akm:
+            if set(profile.akm).isdisjoint(set(self.akm)):
+                return False
+
+        return True
