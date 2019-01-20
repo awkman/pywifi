@@ -495,10 +495,12 @@ class WifiUtil():
            is not ERROR_SUCCESS:
             self._logger.error("Enum interface failed!")
 
-        for interface in self._ifaces.contents.InterfaceInfo:
+        interfaces = cast(self._ifaces.contents.InterfaceInfo,
+                     POINTER(WLAN_INTERFACE_INFO))
+        for i in range(0, self._ifaces.contents.dwNumberOfItems):
             iface = {}
-            iface['guid'] = interface.InterfaceGuid
-            iface['name'] = interface.strInterfaceDescription
+            iface['guid'] = interfaces[i].InterfaceGuid
+            iface['name'] = interfaces[i].strInterfaceDescription
             ifaces.append(iface)
 
         return ifaces
