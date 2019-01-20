@@ -95,6 +95,49 @@ def test_add_network_profile():
     assert const.AKM_TYPE_WPA2PSK in profiles[0].akm
     assert const.AUTH_ALG_OPEN == profiles[0].auth
 
+def test_remove_network_profile():
+
+    wifi = pywifi.PyWiFi()
+
+    iface = wifi.interfaces()[0]
+    iface.remove_all_network_profiles()
+
+    assert len(iface.network_profiles()) == 0
+
+    profile1 = pywifi.Profile()
+    profile1.ssid = 'testap'
+    profile1.auth = const.AUTH_ALG_OPEN
+    profile1.akm.append(const.AKM_TYPE_WPA2PSK)
+    profile1.cipher = const.CIPHER_TYPE_CCMP
+    profile1.key = '12345678'
+    iface.add_network_profile(profile1)
+
+    profile2 = pywifi.Profile()
+    profile2.ssid = 'testap2'
+    profile2.auth = const.AUTH_ALG_OPEN
+    profile2.akm.append(const.AKM_TYPE_WPA2PSK)
+    profile2.cipher = const.CIPHER_TYPE_CCMP
+    profile2.key = '12345678'
+    iface.add_network_profile(profile2)
+
+    profile3 = pywifi.Profile()
+    profile3.ssid = 'testap3'
+    profile3.auth = const.AUTH_ALG_OPEN
+    profile3.akm.append(const.AKM_TYPE_WPAPSK)
+    profile3.cipher = const.CIPHER_TYPE_CCMP
+    profile3.key = '12345678'
+    iface.add_network_profile(profile3)
+
+    profiles = iface.network_profiles()
+
+    assert len(profiles) == 3
+
+    iface.remove_network_profile(profile2)
+
+    profiles = iface.network_profiles()
+
+    assert len(profiles) == 2
+    assert profile2 not in profiles
 
 def test_status():
 

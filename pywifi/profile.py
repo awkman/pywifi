@@ -10,6 +10,7 @@ class Profile():
 
     def __init__(self):
 
+        self.id = 0
         self.auth = AUTH_ALG_OPEN
         self.akm = [AKM_TYPE_NONE]
         self.cipher = CIPHER_TYPE_NONE

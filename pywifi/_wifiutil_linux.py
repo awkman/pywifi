@@ -28,7 +28,6 @@ status_dict = {
     'scanning': IFACE_SCANNING
 }
 
-
 key_mgmt_to_str = {
     AKM_TYPE_WPA: 'WPA-EAP',
     AKM_TYPE_WPAPSK: 'WPA-PSK',
@@ -46,6 +45,11 @@ key_mgmt_to_proto_str = {
 proto_to_key_mgmt_id = {
     'WPA': AKM_TYPE_WPAPSK,
     'RSN': AKM_TYPE_WPA2PSK
+}
+
+cipher_str_to_value = {
+    'TKIP': CIPHER_TYPE_TKIP,
+    'CCMP': CIPHER_TYPE_CCMP,
 }
 
 class WifiUtil():
@@ -181,12 +185,13 @@ class WifiUtil():
         for network_id in network_ids:
             network = Profile()
 
+            network.id = network_id
 
             ssid = self._send_cmd_to_wpas(
                 obj['name'],
                 'GET_NETWORK {} ssid'.format(network_id), True)
             if ssid.upper().startswith('FAIL'):
-                break
+                continue
             else:
                 network.ssid = ssid[1:-1]
 
@@ -197,7 +202,7 @@ class WifiUtil():
 
             network.akm = []
             if key_mgmt.upper().startswith('FAIL'):
-                break
+                continue
             else:
                 if key_mgmt.upper() in ['WPA-PSK']:
                     proto = self._send_cmd_to_wpas(
@@ -220,9 +225,37 @@ class WifiUtil():
                     else:
                         network.akm.append(AKM_TYPE_WPA)
 
+            ciphers = self._send_cmd_to_wpas(
+                obj['name'],
+                'GET_NETWORK {} pairwise'.format(network_id),
+                True).split(' ')
+
+            if ciphers[0].upper().startswith('FAIL'):
+                continue
+            else:
+                # Assume the possible ciphers TKIP and CCMP
+                if len(ciphers) == 1:
+                    network.cipher = cipher_str_to_value(ciphers[0].upper())
+                elif 'CCMP' in ciphers:
+                    network.cipher = CIPHER_TYPE_CCMP
+
             networks.append(network)
 
         return networks
+
+    def remove_network_profile(self, obj, params):
+        """Remove the specified AP profiles"""
+
+        network_id = -1
+        profiles = self.network_profiles(obj)
+
+        for profile in profiles:
+            if profile == params:
+                network_id = profile.id
+
+        if network_id != -1:
+            self._send_cmd_to_wpas(obj['name'],
+                'REMOVE_NETWORK {}'.format(network_id))
 
     def remove_all_network_profiles(self, obj):
         """Remove all the AP profiles."""
