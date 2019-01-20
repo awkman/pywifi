@@ -449,6 +449,14 @@ class WifiUtil():
 
         return profile_list
 
+    def remove_network_profile(self, obj, params):
+        """Remove the specified AP profile."""
+
+        self._logger.debug("delete profile: %s", params.ssid)
+        str_buf = create_unicode_buffer(params.ssid)
+        ret = self._wlan_delete_profile(self._handle, obj['guid'], str_buf)
+        self._logger.debug("delete result %d", ret)
+
     def remove_all_network_profiles(self, obj):
         """Remove all the AP profiles."""
 
