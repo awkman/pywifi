@@ -1,5 +1,9 @@
 # pywifi
 
+![](https://img.shields.io/pypi/pyversions/pywifi.svg)
+[![Build Status](https://travis-ci.com/awkman/pywifi.svg?branch=master)](https://travis-ci.com/awkman/pywifi)
+[![PyPI version](https://badge.fury.io/py/pywifi.svg)](https://badge.fury.io/py/pywifi)
+
 pywifi provides a cross-platform Python module for manipulating wireless
 interfaces.
 
