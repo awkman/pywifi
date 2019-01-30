@@ -32,7 +32,9 @@ For the details of pywifi, please refer to [Documentation].
 
 ## Example
 
+    import time
     import pywifi
+    from pywifi import const
 
     wifi = pywifi.PyWiFi()
 
