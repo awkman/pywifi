@@ -466,6 +466,14 @@ class WifiUtil():
 
         return profile_list
 
+    def remove_network_profile(self, obj, params):
+        """Remove the specified AP profile."""
+
+        self._logger.debug("delete profile: %s", params.ssid)
+        str_buf = create_unicode_buffer(params.ssid)
+        ret = self._wlan_delete_profile(self._handle, obj['guid'], str_buf)
+        self._logger.debug("delete result %d", ret)
+
     def remove_all_network_profiles(self, obj):
         """Remove all the AP profiles."""
 
@@ -476,25 +484,6 @@ class WifiUtil():
             str_buf = create_unicode_buffer(profile_name)
             ret = self._wlan_delete_profile(self._handle, obj['guid'], str_buf)
             self._logger.debug("delete result %d", ret)
-            
-    def remove_network_profile(self, obj, profile_name):
-        """Remove an AP profile."""
-
-        profile_name_list = self.network_profile_name_list(obj)
-
-        for p_name in profile_name_list:
-            if profile_name == p_name:
-                self._logger.debug("delete profile: %s", profile_name)
-                str_buf = create_unicode_buffer(profile_name)
-                ret = self._wlan_delete_profile(self._handle, obj['guid'], str_buf)
-                if ret != ERROR_SUCCESS:
-                    self._logger.debug("Status %d: Delete profile failed", ret)
-                    return False
-                else:
-                    return True
-        else:
-            self._logger.debug('The profile %s to be delete is not viable' % profile_name.decode('gb2312'))
-            return False
 
     def status(self, obj):
         """Get the wifi interface status."""
@@ -523,10 +512,12 @@ class WifiUtil():
            is not ERROR_SUCCESS:
             self._logger.error("Enum interface failed!")
 
-        for interface in self._ifaces.contents.InterfaceInfo:
+        interfaces = cast(self._ifaces.contents.InterfaceInfo,
+                     POINTER(WLAN_INTERFACE_INFO))
+        for i in range(0, self._ifaces.contents.dwNumberOfItems):
             iface = {}
-            iface['guid'] = interface.InterfaceGuid
-            iface['name'] = interface.strInterfaceDescription
+            iface['guid'] = interfaces[i].InterfaceGuid
+            iface['name'] = interfaces[i].strInterfaceDescription
             ifaces.append(iface)
 
         return ifaces

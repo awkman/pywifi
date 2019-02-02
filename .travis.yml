@@ -1,0 +1,22 @@
+language: python
+install:
+    pip install .
+jobs:
+    include:
+        - stage: test
+          script: pytest -p no:cacheprovider
+          python: '2.7'
+        - stage: test
+          script: pytest -p no:cacheprovider
+          python: '3.4'
+        - stage: test
+          script: pytest -p no:cacheprovider
+          python: '3.5'
+        - stage: test
+          script: pytest -p no:cacheprovider
+          python: '3.6'
+        - stage: test
+          script: pytest -p no:cacheprovider
+          python: '3.7'
+          dist: xential
+

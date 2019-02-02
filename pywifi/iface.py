@@ -67,11 +67,11 @@ class Interface:
 
         return self._wifi_ctrl.add_network_profile(self._raw_obj, params)
 
-    def remove_network_profile(self, profile_name):
+    def remove_network_profile(self, params):
         """Remove the specified AP settings."""
 
-        self._wifi_ctrl.remove_network_profile(self._raw_obj, profile_name)
-
+        self._wifi_ctrl.remove_network_profile(self._raw_obj, params)
+    
     def remove_all_network_profiles(self):
         """Remove all the AP settings."""
 
