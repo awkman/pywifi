@@ -6,10 +6,13 @@
 import re
 import platform
 import time
+import binascii
 import logging
 from ctypes import *
 from ctypes.wintypes import *
 from comtypes import GUID
+
+import chardet
 
 from .const import *
 from .profile import Profile
@@ -333,11 +336,14 @@ class WifiUtil():
 
         params.process_akm()
         profile_data = {}
-        profile_data['ssid'] = params.ssid
+        profile_data['ssid'] = binascii.b2a_hex(params.ssid)
 
         if AKM_TYPE_NONE in params.akm:
             profile_data['auth'] = auth_value_to_str_dict[params.auth]
             profile_data['encrypt'] = "none"
+        elif AKM_TYPE_UNKNOWN in params.akm:
+            profile_data['auth'] = auth_value_to_str_dict[params.auth]
+            profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
         else:
             profile_data['auth'] = akm_value_to_str_dict[params.akm[-1]]
             profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
@@ -345,14 +351,17 @@ class WifiUtil():
         profile_data['key'] = params.key
 
         profile_data['protected'] = 'false'
-        profile_data['profile_name'] = params.ssid
+        profile_name = params.ssid
+        if profile_name and (not isinstance(profile_name, unicode)):
+            profile_name = profile_name.decode(chardet.detect(profile_name)['encoding'])
+        profile_data['profile_name'] = profile_name
 
         xml = """<?xml version="1.0"?>
         <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
-            <name>{profile_name}</name>
+            <name><![CDATA[{profile_name}]]></name>
             <SSIDConfig>
                 <SSID>
-                    <name>{ssid}</name>
+                    <hex>{ssid}</hex>
                 </SSID>
             </SSIDConfig>
             <connectionType>ESS</connectionType>
@@ -367,11 +376,19 @@ class WifiUtil():
         """
 
         if AKM_TYPE_NONE not in params.akm:
-            xml += """<sharedKey>
-                        <keyType>passPhrase</keyType>
-                        <protected>{protected}</protected>
-                        <keyMaterial>{key}</keyMaterial>
+            xml += """<sharedKey>"""
+            if params.cipher == CIPHER_TYPE_WEP or len(params.key) == 64:
+                xml +=  """<keyType>networkKey</keyType>"""
+            else:
+                xml +=  """<keyType>passPhrase</keyType>"""
+            
+            xml +=  """<protected>{protected}</protected>
+                        <keyMaterial><![CDATA[{key}]]></keyMaterial>
                     </sharedKey>"""
+                    
+        if params.cipher == CIPHER_TYPE_WEP:
+            profile_data['key_index'] = params.keyindex - 1
+            xml += """                        <keyIndex>{key_index}</keyIndex>"""
 
         xml += """
                 </security>
@@ -394,7 +411,7 @@ class WifiUtil():
         buf = create_unicode_buffer(64)
         self._wlan_reason_code_to_str(reason_code, buf_size, buf)
         
-        return params
+        return (status, buf)
 
     def network_profile_name_list(self, obj):
         """Get AP profile names."""
@@ -459,6 +476,25 @@ class WifiUtil():
             str_buf = create_unicode_buffer(profile_name)
             ret = self._wlan_delete_profile(self._handle, obj['guid'], str_buf)
             self._logger.debug("delete result %d", ret)
+            
+    def remove_network_profile(self, obj, profile_name):
+        """Remove an AP profile."""
+
+        profile_name_list = self.network_profile_name_list(obj)
+
+        for p_name in profile_name_list:
+            if profile_name == p_name:
+                self._logger.debug("delete profile: %s", profile_name)
+                str_buf = create_unicode_buffer(profile_name)
+                ret = self._wlan_delete_profile(self._handle, obj['guid'], str_buf)
+                if ret != ERROR_SUCCESS:
+                    self._logger.debug("Status %d: Delete profile failed", ret)
+                    return False
+                else:
+                    return True
+        else:
+            self._logger.debug('The profile %s to be delete is not viable' % profile_name.decode('gb2312'))
+            return False
 
     def status(self, obj):
         """Get the wifi interface status."""

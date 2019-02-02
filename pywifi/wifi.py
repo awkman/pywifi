@@ -48,3 +48,12 @@ class PyWiFi:
             self._logger.error("Can't get wifi interface")
 
         return self._ifaces
+        
+    def interface(self, guid):
+        wifi_ctrl = wifiutil.WifiUtil()
+        for interface in wifi_ctrl.interfaces():
+            if str(interface['guid']) == str(guid):
+                return Interface(interface)
+        else:
+            self._logger.error("Can't get wifi interface with GUID: %s" % guid)
+            raise RuntimeError("Can't get wifi interface with GUID: %s" % guid)
