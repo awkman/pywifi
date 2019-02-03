@@ -316,7 +316,7 @@ class WifiUtil():
 
         connect_params = WLAN_CONNECTION_PARAMETERS()
         connect_params.wlanConnectionMode = 0  # Profile
-        connect_params.dot11BssType = 1  # infra
+        connect_params.dot11BssType = params.bsstype  # infra
         profile_name = create_unicode_buffer(params.ssid)
 
         connect_params.strProfile = profile_name.value
@@ -349,9 +349,12 @@ class WifiUtil():
             profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
 
         profile_data['key'] = params.key
-
         profile_data['protected'] = 'false'
-        profile_name = params.ssid
+        
+        if params.bsstype == BSS_TYPE_ADHOC and 1 == CLIENT_VERSION:          
+            profile_name = '%s-adhoc' % params.ssid
+        else:
+            profile_name = params.ssid
         if profile_name and (not isinstance(profile_name, unicode)):
             profile_name = profile_name.decode(chardet.detect(profile_name)['encoding'])
         profile_data['profile_name'] = profile_name
@@ -363,9 +366,19 @@ class WifiUtil():
                 <SSID>
                     <hex>{ssid}</hex>
                 </SSID>
-            </SSIDConfig>
-            <connectionType>ESS</connectionType>
-            <connectionMode>manual</connectionMode>
+            """
+        if params.bsstype == BSS_TYPE_ADHOC:
+            xml += """                <nonBroadcast>false</nonBroadcast>"""
+        else:
+            xml += """                <nonBroadcast>true</nonBroadcast>"""
+            
+        xml += """            </SSIDConfig>"""
+        if params.bsstype == BSS_TYPE_ADHOC:
+            xml += """<connectionType>IBSS</connectionType>"""
+        else:
+            xml += """<connectionType>ESS</connectionType>"""
+        
+        xml += """<connectionMode>manual</connectionMode>
             <MSM>
                 <security>
                     <authEncryption>
