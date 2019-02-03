@@ -6,10 +6,13 @@
 import re
 import platform
 import time
+import binascii
 import logging
 from ctypes import *
 from ctypes.wintypes import *
 from comtypes import GUID
+
+import chardet
 
 from .const import *
 from .profile import Profile
@@ -313,7 +316,7 @@ class WifiUtil():
 
         connect_params = WLAN_CONNECTION_PARAMETERS()
         connect_params.wlanConnectionMode = 0  # Profile
-        connect_params.dot11BssType = 1  # infra
+        connect_params.dot11BssType = params.bsstype  # infra
         profile_name = create_unicode_buffer(params.ssid)
 
         connect_params.strProfile = profile_name.value
@@ -333,30 +336,49 @@ class WifiUtil():
 
         params.process_akm()
         profile_data = {}
-        profile_data['ssid'] = params.ssid
+        profile_data['ssid'] = binascii.b2a_hex(params.ssid)
 
         if AKM_TYPE_NONE in params.akm:
             profile_data['auth'] = auth_value_to_str_dict[params.auth]
             profile_data['encrypt'] = "none"
+        elif AKM_TYPE_UNKNOWN in params.akm:
+            profile_data['auth'] = auth_value_to_str_dict[params.auth]
+            profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
         else:
             profile_data['auth'] = akm_value_to_str_dict[params.akm[-1]]
             profile_data['encrypt'] = cipher_value_to_str_dict[params.cipher]
 
         profile_data['key'] = params.key
-
         profile_data['protected'] = 'false'
-        profile_data['profile_name'] = params.ssid
+        
+        if params.bsstype == BSS_TYPE_ADHOC and 1 == CLIENT_VERSION:          
+            profile_name = '%s-adhoc' % params.ssid
+        else:
+            profile_name = params.ssid
+        if profile_name and (not isinstance(profile_name, unicode)):
+            profile_name = profile_name.decode(chardet.detect(profile_name)['encoding'])
+        profile_data['profile_name'] = profile_name
 
         xml = """<?xml version="1.0"?>
         <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
-            <name>{profile_name}</name>
+            <name><![CDATA[{profile_name}]]></name>
             <SSIDConfig>
                 <SSID>
-                    <name>{ssid}</name>
+                    <hex>{ssid}</hex>
                 </SSID>
-            </SSIDConfig>
-            <connectionType>ESS</connectionType>
-            <connectionMode>manual</connectionMode>
+            """
+        if params.bsstype == BSS_TYPE_ADHOC:
+            xml += """                <nonBroadcast>false</nonBroadcast>"""
+        else:
+            xml += """                <nonBroadcast>true</nonBroadcast>"""
+            
+        xml += """            </SSIDConfig>"""
+        if params.bsstype == BSS_TYPE_ADHOC:
+            xml += """<connectionType>IBSS</connectionType>"""
+        else:
+            xml += """<connectionType>ESS</connectionType>"""
+        
+        xml += """<connectionMode>manual</connectionMode>
             <MSM>
                 <security>
                     <authEncryption>
@@ -367,11 +389,19 @@ class WifiUtil():
         """
 
         if AKM_TYPE_NONE not in params.akm:
-            xml += """<sharedKey>
-                        <keyType>passPhrase</keyType>
-                        <protected>{protected}</protected>
-                        <keyMaterial>{key}</keyMaterial>
+            xml += """<sharedKey>"""
+            if params.cipher == CIPHER_TYPE_WEP or len(params.key) == 64:
+                xml +=  """<keyType>networkKey</keyType>"""
+            else:
+                xml +=  """<keyType>passPhrase</keyType>"""
+            
+            xml +=  """<protected>{protected}</protected>
+                        <keyMaterial><![CDATA[{key}]]></keyMaterial>
                     </sharedKey>"""
+                    
+        if params.cipher == CIPHER_TYPE_WEP:
+            profile_data['key_index'] = params.keyindex - 1
+            xml += """                        <keyIndex>{key_index}</keyIndex>"""
 
         xml += """
                 </security>
@@ -394,7 +424,7 @@ class WifiUtil():
         buf = create_unicode_buffer(64)
         self._wlan_reason_code_to_str(reason_code, buf_size, buf)
         
-        return params
+        return (status, buf)
 
     def network_profile_name_list(self, obj):
         """Get AP profile names."""

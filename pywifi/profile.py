@@ -17,6 +17,8 @@ class Profile():
         self.ssid = None
         self.bssid = None
         self.key = None
+        self.keyindex = None
+        self.bsstype = BSS_TYPE_INFRA # 1 - Infra, 2 - Adhoc
 
     def process_akm(self):
 
