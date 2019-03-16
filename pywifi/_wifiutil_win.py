@@ -277,7 +277,29 @@ class WifiUtil():
 
                     if networks[i].dot11Ssid.ucSSID != b'':
                         ssid += "%c" % networks[i].dot11Ssid.ucSSID[j]
-
+                #This part is used for converting to UTF-8 encoded SSID
+                temp_cnt = 0
+                temp_hex_res = 0
+                bytes_list = []
+                converted_name = ""
+                for bin_encode_char in ssid:
+                    if (33 <= ord(bin_encode_char) <= 126):
+                        converted_name = converted_name + bin_encode_char
+                    else:
+                        temp_cnt = temp_cnt + 1
+                        temp_now = int(str(bin(ord(bin_encode_char)))[2:6], 2)
+                        temp_now1 = int(str(bin(ord(bin_encode_char)))[6:10], 2)
+                        temp_hex_res = temp_hex_res + temp_now * 16 + temp_now1
+                        bytes_list.append(temp_hex_res)
+                        temp_hex_res = 0
+                        if temp_cnt == 3:
+                            converted_name = converted_name + bytes(bytes_list).decode('utf-8', 'ignore')
+                            bytes_list = []
+                            temp_hex_res = 0
+                            temp_cnt = 0
+                ssid = converted_name
+                #print("Work + " + ssid + "  strlen : " + str(len(ssid)))
+                #End of converting part
                 bss_list = pointer(WLAN_BSS_LIST())
                 self._wlan_get_network_bss_list(self._handle,
                     byref(obj['guid']), byref(bss_list), networks[i].dot11Ssid, networks[i].bSecurityEnabled)
