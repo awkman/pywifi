@@ -299,6 +299,7 @@ class WifiUtil():
                     network.bssid = ''
                     for k in range(6):
                         network.bssid += "%02x:" % bsses[j].dot11Bssid[k]
+                    network.bssid = network.bssid[:-1]
 
                     network.signal = bsses[j].lRssi
                     network.freq = bsses[j].ulChCenterFrequency
