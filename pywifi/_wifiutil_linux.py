@@ -194,6 +194,14 @@ class WifiUtil():
                 continue
             else:
                 network.ssid = ssid[1:-1]
+            
+            disabled = self._send_cmd_to_wpas(
+                obj['name'],
+                'GET_NETWORK {} disabled'.format(network_id), True)
+            if ssid.upper().startswith('FAIL'):
+                continue
+            else:
+                network.disabled = int(disabled)
 
             key_mgmt = self._send_cmd_to_wpas(
                 obj['name'],
