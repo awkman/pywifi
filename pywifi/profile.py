@@ -17,6 +17,7 @@ class Profile():
         self.ssid = None
         self.bssid = None
         self.key = None
+        self.disabled = 0
 
     def process_akm(self):
 
