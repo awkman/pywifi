@@ -235,7 +235,7 @@ class WifiUtil():
             else:
                 # Assume the possible ciphers TKIP and CCMP
                 if len(ciphers) == 1:
-                    network.cipher = cipher_str_to_value(ciphers[0].upper())
+                    network.cipher = cipher_str_to_value[ciphers[0].upper()]
                 elif 'CCMP' in ciphers:
                     network.cipher = CIPHER_TYPE_CCMP
 
