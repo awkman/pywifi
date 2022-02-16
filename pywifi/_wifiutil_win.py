@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set fileencoding=utf-8
 
-"""Implementations of wifi functions of Linux."""
+"""Implementations of wifi functions of Windows."""
 
 import re
 import platform
@@ -535,7 +535,7 @@ class WifiUtil():
         func.argtypes = [HANDLE, POINTER(GUID), DWORD, c_void_p, POINTER(
             POINTER(WLAN_AVAILABLE_NETWORK_LIST))]
         func.restypes = [DWORD]
-        return func(handle, iface_guid, 2, None, network_list)
+        return func(handle, iface_guid, 0, None, network_list)
 
     def _wlan_get_network_bss_list(self, handle, iface_guid, bss_list, ssid = None, security = False):
 
