@@ -3,7 +3,7 @@
 
 ## Constants
 
-Following constatns are defined in pywifi.
+Following constants are defined in pywifi.
 
 Before using the constants, please remember to ```import pywifi```.
 
